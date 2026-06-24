@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TodoTakehome.Api.Data;
+using TodoTakehome.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ var sqliteConnectionString = SqliteConnectionString.Create(connectionString, bui
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(sqliteConnectionString));
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
