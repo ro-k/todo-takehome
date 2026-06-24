@@ -55,3 +55,26 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+.vite/
+
+# Frontend env files
+.env.local
+.env.*.local
+
+# SQLite local database files
+*.db
+*.db-shm
+*.db-wal
+App_Data/
+
+# JetBrains / Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
