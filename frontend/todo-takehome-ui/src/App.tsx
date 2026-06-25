@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { ApiClientError, getCurrentUser, login, logout, register } from './api/client';
 import { AuthForm } from './components/AuthForm';
+import { TaskBoard } from './components/TaskBoard';
 import type { AuthRequest, User } from './types/auth';
 
 type AuthMode = 'login' | 'register';
@@ -83,10 +84,7 @@ function App() {
           </button>
         </header>
 
-        <section className="panel">
-          <h2>Tasks</h2>
-          <p className="muted">Task management UI comes next.</p>
-        </section>
+        <TaskBoard />
       </main>
     );
   }
