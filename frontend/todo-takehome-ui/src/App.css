@@ -223,3 +223,15 @@ button:disabled {
     align-items: flex-start;
   }
 }
+
+.field-error {
+  margin: -0.65rem 0 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.auth-form input[aria-invalid="true"],
+.task-form input[aria-invalid="true"],
+.task-form textarea[aria-invalid="true"] {
+  border-color: #b91c1c;
+}
