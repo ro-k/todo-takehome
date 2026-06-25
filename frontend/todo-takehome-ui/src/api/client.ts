@@ -1,4 +1,5 @@
 import type { ApiError, AuthRequest, AuthResponse } from '../types/auth';
+import type { CompleteTaskRequest, TaskRequest, TodoTask } from '../types/tasks';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7043';
 
@@ -86,4 +87,33 @@ export function logout(): Promise<void> {
 
 export function getCurrentUser(): Promise<AuthResponse> {
   return request<AuthResponse>('/api/auth/me');
+}
+
+export function listTasks(): Promise<TodoTask[]> {
+  return request<TodoTask[]>('/api/tasks');
+}
+
+export function createTask(requestBody: TaskRequest): Promise<TodoTask> {
+  return request<TodoTask>('/api/tasks', {
+    method: 'POST',
+    body: JSON.stringify(requestBody),
+  });
+}
+
+export function updateTask(id: number, requestBody: TaskRequest): Promise<TodoTask> {
+  return request<TodoTask>(`/api/tasks/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(requestBody),
+  });
+}
+
+export function deleteTask(id: number): Promise<void> {
+  return request<void>(`/api/tasks/${id}`, { method: 'DELETE' });
+}
+
+export function completeTask(id: number, requestBody: CompleteTaskRequest): Promise<TodoTask> {
+  return request<TodoTask>(`/api/tasks/${id}/complete`, {
+    method: 'PATCH',
+    body: JSON.stringify(requestBody),
+  });
 }
