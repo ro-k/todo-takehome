@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using TodoTakehome.Api.Data;
 using TodoTakehome.Api.Dtos.Auth;
@@ -13,7 +12,7 @@ public sealed class AuthEndpointTests
     public async Task Register_creates_user_and_signs_in()
     {
         await using var factory = new TodoTakehomeApiFactory();
-        using var client = CreateClient(factory);
+        using var client = TestClient.Create(factory);
 
         var response = await client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -21,7 +20,7 @@ public sealed class AuthEndpointTests
             password = "password123"
         });
 
-        await AssertStatusCodeAsync(HttpStatusCode.Created, response);
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.Created, response);
         Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("todo-takehome-auth"));
 
         var body = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
@@ -41,7 +40,7 @@ public sealed class AuthEndpointTests
     public async Task Login_with_valid_password_signs_in()
     {
         await using var factory = new TodoTakehomeApiFactory();
-        using var client = CreateClient(factory);
+        using var client = TestClient.Create(factory);
 
         await client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -55,7 +54,7 @@ public sealed class AuthEndpointTests
             password = "password123"
         });
 
-        await AssertStatusCodeAsync(HttpStatusCode.OK, response);
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.OK, response);
         Assert.Contains(response.Headers.GetValues("Set-Cookie"), value => value.Contains("todo-takehome-auth"));
     }
 
@@ -63,7 +62,7 @@ public sealed class AuthEndpointTests
     public async Task Login_with_invalid_password_returns_unauthorized()
     {
         await using var factory = new TodoTakehomeApiFactory();
-        using var client = CreateClient(factory);
+        using var client = TestClient.Create(factory);
 
         await client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -77,14 +76,14 @@ public sealed class AuthEndpointTests
             password = "wrong-password"
         });
 
-        await AssertStatusCodeAsync(HttpStatusCode.Unauthorized, response);
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.Unauthorized, response);
     }
 
     [Fact]
     public async Task Me_returns_current_user_when_authenticated()
     {
         await using var factory = new TodoTakehomeApiFactory();
-        using var client = CreateClient(factory);
+        using var client = TestClient.Create(factory);
 
         await client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -94,7 +93,7 @@ public sealed class AuthEndpointTests
 
         var response = await client.GetAsync("/api/auth/me");
 
-        await AssertStatusCodeAsync(HttpStatusCode.OK, response);
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.OK, response);
 
         var body = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
         Assert.NotNull(body);
@@ -105,7 +104,7 @@ public sealed class AuthEndpointTests
     public async Task Logout_clears_authenticated_session()
     {
         await using var factory = new TodoTakehomeApiFactory();
-        using var client = CreateClient(factory);
+        using var client = TestClient.Create(factory);
 
         await client.PostAsJsonAsync("/api/auth/register", new
         {
@@ -116,27 +115,7 @@ public sealed class AuthEndpointTests
         var logoutResponse = await client.PostAsync("/api/auth/logout", null);
         var meResponse = await client.GetAsync("/api/auth/me");
 
-        await AssertStatusCodeAsync(HttpStatusCode.NoContent, logoutResponse);
-        await AssertStatusCodeAsync(HttpStatusCode.Unauthorized, meResponse);
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.NoContent, logoutResponse);
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.Unauthorized, meResponse);
     }
-
-    private static HttpClient CreateClient(TodoTakehomeApiFactory factory)
-    {
-        return factory.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri("https://localhost")
-        });
-    }
-
-    private static async Task AssertStatusCodeAsync(HttpStatusCode expectedStatusCode, HttpResponseMessage response)
-    {
-        var responseBody = await response.Content.ReadAsStringAsync();
-        Assert.True(response.StatusCode == expectedStatusCode,
-            $"Expected {expectedStatusCode}, got {response.StatusCode}. Response body: {responseBody}");
-    }
-
 }
-
-
-
-

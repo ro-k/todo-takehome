@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TodoTakehome.Api.Dtos.Tasks;
 
-public sealed class CreateTaskRequestDto
+public sealed class CreateTaskRequestDto : IValidatableObject
 {
     [Required]
     [MaxLength(200)]
@@ -12,4 +12,12 @@ public sealed class CreateTaskRequestDto
     public string? Description { get; init; }
 
     public DateOnly? DueDate { get; init; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrWhiteSpace(Title))
+        {
+            yield return new ValidationResult("Title is required.", [nameof(Title)]);
+        }
+    }
 }
