@@ -8,7 +8,9 @@ import { getErrorMessage } from './taskUiHelpers';
 export function TaskBoard() {
   const [tasks, setTasks] = useState<TodoTask[]>([]);
   const [editingTask, setEditingTask] = useState<TodoTask | null>(null);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(true);
   const [pendingTaskId, setPendingTaskId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +47,7 @@ export function TaskBoard() {
   async function handleCreate(request: TaskRequest) {
     const createdTask = await createTask(request);
     setTasks((currentTasks) => [...currentTasks, createdTask]);
+    setIsCreateFormOpen(false);
   }
 
   async function handleUpdate(request: TaskRequest) {
@@ -57,6 +60,21 @@ export function TaskBoard() {
       currentTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task)),
     );
     setEditingTask(null);
+  }
+
+  function handleStartCreate() {
+    setEditingTask(null);
+    setIsCreateFormOpen(true);
+  }
+
+  function handleCancelForm() {
+    setEditingTask(null);
+    setIsCreateFormOpen(false);
+  }
+
+  function handleStartEdit(task: TodoTask) {
+    setIsCreateFormOpen(false);
+    setEditingTask(task);
   }
 
   async function handleToggleComplete(task: TodoTask) {
@@ -93,23 +111,40 @@ export function TaskBoard() {
     }
   }
 
+  const visibleTasks = showCompleted ? tasks : tasks.filter((task) => !task.isComplete);
+  const completedTaskCount = tasks.filter((task) => task.isComplete).length;
+
   return (
     <section className="task-layout">
-      <TaskForm
-        key={editingTask?.id ?? 'create'}
-        initialTask={editingTask}
-        onCancel={editingTask ? () => setEditingTask(null) : undefined}
-        onSubmit={editingTask ? handleUpdate : handleCreate}
-      />
+      {editingTask || isCreateFormOpen ? (
+        <TaskForm
+          key={editingTask?.id ?? 'create'}
+          initialTask={editingTask}
+          onCancel={handleCancelForm}
+          onSubmit={editingTask ? handleUpdate : handleCreate}
+        />
+      ) : (
+        <section className="panel task-form-prompt">
+          <h2>New task</h2>
+          <p className="muted">Add a task when you are ready to capture the next thing.</p>
+          <button onClick={handleStartCreate} type="button">
+            New task
+          </button>
+        </section>
+      )}
 
       <TaskList
+        completedTaskCount={completedTaskCount}
         error={error}
         isLoading={isLoading}
         onDelete={handleDelete}
-        onEdit={setEditingTask}
+        onEdit={handleStartEdit}
+        onToggleCompletedVisibility={() => setShowCompleted((currentValue) => !currentValue)}
         onToggleComplete={handleToggleComplete}
         pendingTaskId={pendingTaskId}
-        tasks={tasks}
+        showCompleted={showCompleted}
+        tasks={visibleTasks}
+        totalTaskCount={tasks.length}
       />
     </section>
   );
