@@ -134,12 +134,13 @@ button:disabled {
   width: min(64rem, 100%);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(18rem, 24rem) 1fr;
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
   gap: 1.5rem;
   align-items: start;
 }
 
 .task-list-panel {
+  min-width: 0;
   width: 100%;
 }
 
@@ -170,30 +171,38 @@ button:disabled {
 
 .task-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 1rem;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 1rem;
 }
 
+.task-item__content {
+  min-width: 0;
+}
+
 .task-item__content p {
   margin: 0.35rem 0 0;
+  overflow-wrap: anywhere;
 }
 
 .complete-toggle {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  min-width: 0;
 }
 
 .complete-toggle input {
+  flex: 0 0 auto;
   width: 1rem;
   height: 1rem;
 }
 
 .task-title {
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .task-title--complete {
