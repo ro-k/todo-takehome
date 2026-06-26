@@ -21,8 +21,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
         modelBuilder.Entity<TodoTask>(entity =>
         {
-            entity.Property(task => task.Title).HasMaxLength(200).IsRequired();
-            entity.Property(task => task.Description).HasMaxLength(2000);
+            entity.Property(task => task.Title).HasMaxLength(TodoTaskLimits.TitleMaxLength).IsRequired();
+            entity.Property(task => task.Description).HasMaxLength(TodoTaskLimits.DescriptionMaxLength);
 
             entity.HasOne<User>()
                 .WithMany()
@@ -31,5 +31,3 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         });
     }
 }
-
-

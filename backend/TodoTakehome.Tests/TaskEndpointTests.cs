@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using TodoTakehome.Api.Dtos.Tasks;
 
 namespace TodoTakehome.Tests;
@@ -122,6 +123,80 @@ public sealed class TaskEndpointTests
     }
 
     [Fact]
+    public async Task Overlong_title_is_rejected_on_create()
+    {
+        await using var factory = new TodoTakehomeApiFactory();
+        using var client = TestClient.Create(factory);
+        await RegisterAsync(client, "user@example.com");
+
+        var response = await client.PostAsJsonAsync("/api/tasks", new
+        {
+            title = new string('a', 201),
+            description = "Description",
+            dueDate = (string?)null
+        });
+
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.BadRequest, response);
+        await AssertValidationErrorAsync(response, "Title", "Title must be 200 characters or fewer.");
+    }
+
+    [Fact]
+    public async Task Overlong_description_is_rejected_on_create()
+    {
+        await using var factory = new TodoTakehomeApiFactory();
+        using var client = TestClient.Create(factory);
+        await RegisterAsync(client, "user@example.com");
+
+        var response = await client.PostAsJsonAsync("/api/tasks", new
+        {
+            title = "Valid title",
+            description = new string('a', 2001),
+            dueDate = (string?)null
+        });
+
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.BadRequest, response);
+        await AssertValidationErrorAsync(response, "Description", "Description must be 2000 characters or fewer.");
+    }
+
+    [Fact]
+    public async Task Overlong_title_is_rejected_on_update()
+    {
+        await using var factory = new TodoTakehomeApiFactory();
+        using var client = TestClient.Create(factory);
+        await RegisterAsync(client, "user@example.com");
+        var task = await CreateTaskAsync(client, "Original");
+
+        var response = await client.PutAsJsonAsync($"/api/tasks/{task.Id}", new
+        {
+            title = new string('a', 201),
+            description = "Description",
+            dueDate = (string?)null
+        });
+
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.BadRequest, response);
+        await AssertValidationErrorAsync(response, "Title", "Title must be 200 characters or fewer.");
+    }
+
+    [Fact]
+    public async Task Overlong_description_is_rejected_on_update()
+    {
+        await using var factory = new TodoTakehomeApiFactory();
+        using var client = TestClient.Create(factory);
+        await RegisterAsync(client, "user@example.com");
+        var task = await CreateTaskAsync(client, "Original");
+
+        var response = await client.PutAsJsonAsync($"/api/tasks/{task.Id}", new
+        {
+            title = "Valid title",
+            description = new string('a', 2001),
+            dueDate = (string?)null
+        });
+
+        await TestClient.AssertStatusCodeAsync(HttpStatusCode.BadRequest, response);
+        await AssertValidationErrorAsync(response, "Description", "Description must be 2000 characters or fewer.");
+    }
+
+    [Fact]
     public async Task Valid_update_succeeds()
     {
         await using var factory = new TodoTakehomeApiFactory();
@@ -164,6 +239,16 @@ public sealed class TaskEndpointTests
         Assert.Empty(tasks);
     }
 
+    private static async Task AssertValidationErrorAsync(HttpResponseMessage response, string fieldName, string expectedMessage)
+    {
+        var responseBody = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(responseBody);
+        var errors = document.RootElement.GetProperty("errors");
+
+        Assert.True(errors.TryGetProperty(fieldName, out var fieldErrors),
+            $"Expected validation error for {fieldName}. Response body: {responseBody}");
+        Assert.Contains(fieldErrors.EnumerateArray(), error => error.GetString() == expectedMessage);
+    }
     private static async Task RegisterAsync(HttpClient client, string email)
     {
         var response = await client.PostAsJsonAsync("/api/auth/register", new

@@ -57,10 +57,13 @@ function App() {
   }
 
   async function handleLogout() {
-    await logout();
-    setCurrentUser(null);
-    setSessionStatus('anonymous');
-    setAuthMode('login');
+    try {
+      await logout();
+    } finally {
+      setCurrentUser(null);
+      setSessionStatus('anonymous');
+      setAuthMode('login');
+    }
   }
 
   if (sessionStatus === 'loading') {
@@ -118,3 +121,4 @@ function getErrorMessage(error: unknown) {
 }
 
 export default App;
+
