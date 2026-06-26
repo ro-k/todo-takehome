@@ -1,14 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using TodoTakehome.Api.Models;
 
 namespace TodoTakehome.Api.Dtos.Tasks;
 
 public sealed class CreateTaskRequestDto : IValidatableObject
 {
     [Required]
-    [MaxLength(200)]
+    [MaxLength(TodoTaskLimits.TitleMaxLength, ErrorMessage = TodoTaskLimits.TitleMaxLengthMessage)]
     public string Title { get; init; } = string.Empty;
 
-    [MaxLength(2000)]
+    [MaxLength(TodoTaskLimits.DescriptionMaxLength, ErrorMessage = TodoTaskLimits.DescriptionMaxLengthMessage)]
     public string? Description { get; init; }
 
     public DateOnly? DueDate { get; init; }
