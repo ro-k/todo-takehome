@@ -9,6 +9,7 @@ export function TaskBoard() {
   const [tasks, setTasks] = useState<TodoTask[]>([]);
   const [editingTask, setEditingTask] = useState<TodoTask | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(true);
   const [pendingTaskId, setPendingTaskId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +94,9 @@ export function TaskBoard() {
     }
   }
 
+  const visibleTasks = showCompleted ? tasks : tasks.filter((task) => !task.isComplete);
+  const completedTaskCount = tasks.filter((task) => task.isComplete).length;
+
   return (
     <section className="task-layout">
       <TaskForm
@@ -103,13 +107,17 @@ export function TaskBoard() {
       />
 
       <TaskList
+        completedTaskCount={completedTaskCount}
         error={error}
         isLoading={isLoading}
         onDelete={handleDelete}
         onEdit={setEditingTask}
+        onToggleCompletedVisibility={() => setShowCompleted((currentValue) => !currentValue)}
         onToggleComplete={handleToggleComplete}
         pendingTaskId={pendingTaskId}
-        tasks={tasks}
+        showCompleted={showCompleted}
+        tasks={visibleTasks}
+        totalTaskCount={tasks.length}
       />
     </section>
   );
