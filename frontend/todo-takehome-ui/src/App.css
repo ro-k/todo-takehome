@@ -217,6 +217,15 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.task-actions {
+  align-self: start;
+  align-items: flex-start;
+}
+
+.task-actions button {
+  flex: 0 0 5.5rem;
+}
+
 @media (max-width: 760px) {
   .app {
     padding: 1rem;
